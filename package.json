@@ -1,0 +1,10 @@
+{
+  "name": "kids-news-radio-admin-prototype",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A static admin prototype for a children's news radio mini program.",
+  "scripts": {
+    "start": "npx serve .",
+    "dev": "npx serve ."
+  }
+}

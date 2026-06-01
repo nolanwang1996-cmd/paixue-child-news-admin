@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>儿童新闻电台后台</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main id="app" class="app-shell">
+      <section class="login-view" data-view="login">
+        <div class="login-panel">
+          <div class="brand-mark">童</div>
+          <h1>儿童新闻电台后台</h1>
+          <p>内容编辑、音频管理、审核发布和首页推荐配置。</p>
+          <form id="loginForm" class="login-form">
+            <label>
+              账号
+              <input name="account" value="editor" autocomplete="username" />
+            </label>
+            <label>
+              密码
+              <input name="password" value="demo123" type="password" autocomplete="current-password" />
+            </label>
+            <button type="submit">进入后台</button>
+          </form>
+        </div>
+      </section>
+
+      <section class="workspace-view is-hidden" data-view="workspace">
+        <aside class="sidebar">
+          <div class="sidebar-brand">
+            <div class="brand-mark small">童</div>
+            <div>
+              <strong>儿童新闻电台</strong>
+              <span>Admin Prototype</span>
+            </div>
+          </div>
+          <nav class="nav-list" aria-label="后台导航">
+            <button class="nav-item is-active" data-page="dashboard">总览</button>
+            <button class="nav-item" data-page="news">新闻管理</button>
+            <button class="nav-item" data-page="review">审核发布</button>
+            <button class="nav-item" data-page="homepage">首页配置</button>
+            <button class="nav-item" data-page="settings">栏目设置</button>
+          </nav>
+          <button id="resetDemo" class="ghost-button">重置演示数据</button>
+        </aside>
+
+        <section class="main-stage">
+          <header class="topbar">
+            <div>
+              <span class="eyebrow">内容工作台</span>
+              <h2 id="pageTitle">总览</h2>
+            </div>
+            <div class="topbar-actions">
+              <button id="exportData" class="secondary-button">导出 JSON</button>
+              <button id="newArticle" class="primary-button">新建新闻</button>
+            </div>
+          </header>
+
+          <section class="page is-active" data-page-panel="dashboard">
+            <div class="metric-grid">
+              <article class="metric-card">
+                <span>已发布</span>
+                <strong id="publishedCount">0</strong>
+              </article>
+              <article class="metric-card">
+                <span>待审核</span>
+                <strong id="reviewCount">0</strong>
+              </article>
+              <article class="metric-card">
+                <span>今日推荐</span>
+                <strong id="recommendCount">0</strong>
+              </article>
+              <article class="metric-card">
+                <span>总播放量</span>
+                <strong id="playCount">0</strong>
+              </article>
+            </div>
+
+            <div class="content-band two-column">
+              <section>
+                <div class="section-heading">
+                  <h3>最近编辑</h3>
+                </div>
+                <div id="recentList" class="compact-list"></div>
+              </section>
+              <section>
+                <div class="section-heading">
+                  <h3>发布流程</h3>
+                </div>
+                <div class="flow">
+                  <span>草稿</span>
+                  <span>待审核</span>
+                  <span>已发布</span>
+                  <span>已下架</span>
+                </div>
+              </section>
+            </div>
+          </section>
+
+          <section class="page" data-page-panel="news">
+            <div class="toolbar">
+              <input id="searchInput" placeholder="搜索标题、摘要、分类" />
+              <select id="statusFilter">
+                <option value="all">全部状态</option>
+                <option value="draft">草稿</option>
+                <option value="review">待审核</option>
+                <option value="published">已发布</option>
+                <option value="offline">已下架</option>
+              </select>
+              <select id="categoryFilter">
+                <option value="all">全部栏目</option>
+              </select>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>标题</th>
+                    <th>栏目</th>
+                    <th>年龄段</th>
+                    <th>状态</th>
+                    <th>音频</th>
+                    <th>更新时间</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody id="newsRows"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="page" data-page-panel="review">
+            <div class="section-heading">
+              <h3>待审核内容</h3>
+              <span>把内容从编辑台推到小程序前台。</span>
+            </div>
+            <div id="reviewQueue" class="review-grid"></div>
+          </section>
+
+          <section class="page" data-page-panel="homepage">
+            <div class="homepage-layout">
+              <section class="config-panel">
+                <div class="section-heading">
+                  <h3>首页推荐位</h3>
+                  <span>拖动排序会在下一版加入；当前可勾选推荐。</span>
+                </div>
+                <div id="homepageList" class="compact-list"></div>
+              </section>
+              <section class="phone-preview" aria-label="小程序首页预览">
+                <div class="phone-shell">
+                  <div class="phone-header">小小新闻电台</div>
+                  <div id="miniPreview" class="mini-preview"></div>
+                </div>
+              </section>
+            </div>
+          </section>
+
+          <section class="page" data-page-panel="settings">
+            <div class="content-band">
+              <div class="section-heading">
+                <h3>栏目与年龄段</h3>
+                <span>原型阶段先内置配置，后续可改成数据库表。</span>
+              </div>
+              <div class="settings-grid">
+                <div>
+                  <h4>栏目</h4>
+                  <div id="categoryTags" class="tag-cloud"></div>
+                </div>
+                <div>
+                  <h4>年龄段</h4>
+                  <div class="tag-cloud">
+                    <span>3-6 岁</span>
+                    <span>7-9 岁</span>
+                    <span>10-12 岁</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </section>
+      </section>
+    </main>
+
+    <dialog id="editorDialog" class="editor-dialog">
+      <form id="articleForm" method="dialog">
+        <header class="dialog-header">
+          <div>
+            <span class="eyebrow">内容编辑</span>
+            <h3 id="dialogTitle">新建新闻</h3>
+          </div>
+          <button type="button" id="closeDialog" class="icon-button" aria-label="关闭">×</button>
+        </header>
+        <input type="hidden" name="id" />
+        <div class="form-grid">
+          <label class="span-2">
+            标题
+            <input name="title" required maxlength="40" />
+          </label>
+          <label>
+            栏目
+            <select name="category"></select>
+          </label>
+          <label>
+            年龄段
+            <select name="ageGroup">
+              <option>3-6 岁</option>
+              <option>7-9 岁</option>
+              <option>10-12 岁</option>
+            </select>
+          </label>
+          <label>
+            难度
+            <select name="difficulty">
+              <option>轻松</option>
+              <option>标准</option>
+              <option>进阶</option>
+            </select>
+          </label>
+          <label>
+            状态
+            <select name="status">
+              <option value="draft">草稿</option>
+              <option value="review">待审核</option>
+              <option value="published">已发布</option>
+              <option value="offline">已下架</option>
+            </select>
+          </label>
+          <label class="span-2">
+            摘要
+            <textarea name="summary" rows="3" required></textarea>
+          </label>
+          <label class="span-2">
+            正文
+            <textarea name="content" rows="8" required></textarea>
+          </label>
+          <label>
+            封面图 URL
+            <input name="coverUrl" />
+          </label>
+          <label>
+            音频 URL
+            <input name="audioUrl" />
+          </label>
+          <label>
+            主播
+            <input name="host" />
+          </label>
+          <label>
+            音频时长
+            <input name="duration" placeholder="02:30" />
+          </label>
+          <label class="checkbox-label">
+            <input name="recommended" type="checkbox" />
+            今日推荐
+          </label>
+          <label>
+            审核备注
+            <input name="reviewNote" />
+          </label>
+        </div>
+        <footer class="dialog-footer">
+          <button type="button" id="saveDraft" class="secondary-button">保存草稿</button>
+          <button type="submit" class="primary-button">保存内容</button>
+        </footer>
+      </form>
+    </dialog>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
