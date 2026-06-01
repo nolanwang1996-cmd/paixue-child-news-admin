@@ -12,16 +12,10 @@
         <div class="login-panel">
           <div class="brand-mark">童</div>
           <h1>儿童新闻电台后台</h1>
-          <p>内容编辑、音频管理、审核发布和首页推荐配置。</p>
+          <p>面向儿童端新闻电台的故事播报、揭秘、问答、表达打卡和发布管理。</p>
           <form id="loginForm" class="login-form">
-            <label>
-              账号
-              <input name="account" value="editor" autocomplete="username" />
-            </label>
-            <label>
-              密码
-              <input name="password" value="demo123" type="password" autocomplete="current-password" />
-            </label>
+            <label>账号<input name="account" value="editor" autocomplete="username" /></label>
+            <label>密码<input name="password" value="demo123" type="password" autocomplete="current-password" /></label>
             <button type="submit">进入后台</button>
           </form>
         </div>
@@ -33,15 +27,19 @@
             <div class="brand-mark small">童</div>
             <div>
               <strong>儿童新闻电台</strong>
-              <span>Admin Prototype</span>
+              <span>KidsNews Admin</span>
             </div>
           </div>
           <nav class="nav-list" aria-label="后台导航">
             <button class="nav-item is-active" data-page="dashboard">总览</button>
-            <button class="nav-item" data-page="news">新闻管理</button>
+            <button class="nav-item" data-page="news">内容稿件</button>
+            <button class="nav-item" data-page="pipeline">流程编排</button>
+            <button class="nav-item" data-page="decode">揭秘线索</button>
+            <button class="nav-item" data-page="qa">问答打卡</button>
+            <button class="nav-item" data-page="audio">音频字幕</button>
             <button class="nav-item" data-page="review">审核发布</button>
-            <button class="nav-item" data-page="homepage">首页配置</button>
-            <button class="nav-item" data-page="settings">栏目设置</button>
+            <button class="nav-item" data-page="homepage">前台预览</button>
+            <button class="nav-item" data-page="settings">电台配置</button>
           </nav>
           <button id="resetDemo" class="ghost-button">重置演示数据</button>
         </aside>
@@ -49,51 +47,36 @@
         <section class="main-stage">
           <header class="topbar">
             <div>
-              <span class="eyebrow">内容工作台</span>
+              <span class="eyebrow">儿童端新闻电台工作台</span>
               <h2 id="pageTitle">总览</h2>
             </div>
             <div class="topbar-actions">
-              <button id="exportData" class="secondary-button">导出 JSON</button>
+              <button id="exportData" class="secondary-button">导出 KidsNews JSON</button>
               <button id="newArticle" class="primary-button">新建新闻</button>
             </div>
           </header>
 
           <section class="page is-active" data-page-panel="dashboard">
             <div class="metric-grid">
-              <article class="metric-card">
-                <span>已发布</span>
-                <strong id="publishedCount">0</strong>
-              </article>
-              <article class="metric-card">
-                <span>待审核</span>
-                <strong id="reviewCount">0</strong>
-              </article>
-              <article class="metric-card">
-                <span>今日推荐</span>
-                <strong id="recommendCount">0</strong>
-              </article>
-              <article class="metric-card">
-                <span>总播放量</span>
-                <strong id="playCount">0</strong>
-              </article>
+              <article class="metric-card"><span>已发布</span><strong id="publishedCount">0</strong></article>
+              <article class="metric-card"><span>待审核</span><strong id="reviewCount">0</strong></article>
+              <article class="metric-card"><span>可进儿童端</span><strong id="readyCount">0</strong></article>
+              <article class="metric-card"><span>总播放量</span><strong id="playCount">0</strong></article>
             </div>
-
             <div class="content-band two-column">
               <section>
-                <div class="section-heading">
-                  <h3>最近编辑</h3>
-                </div>
+                <div class="section-heading"><h3>最近编辑</h3><span>按儿童端字段完整度排序查看</span></div>
                 <div id="recentList" class="compact-list"></div>
               </section>
               <section>
-                <div class="section-heading">
-                  <h3>发布流程</h3>
-                </div>
+                <div class="section-heading"><h3>前台真实流程</h3><span>对应 RadioStationFragment.NewsScreen</span></div>
                 <div class="flow">
-                  <span>草稿</span>
-                  <span>待审核</span>
-                  <span>已发布</span>
-                  <span>已下架</span>
+                  <span>频道/专题</span>
+                  <span>故事播报</span>
+                  <span>新闻揭秘</span>
+                  <span>语音问答</span>
+                  <span>表达打卡</span>
+                  <span>完成</span>
                 </div>
               </section>
             </div>
@@ -101,27 +84,27 @@
 
           <section class="page" data-page-panel="news">
             <div class="toolbar">
-              <input id="searchInput" placeholder="搜索标题、摘要、分类" />
+              <input id="searchInput" placeholder="搜索标题、导语、专题、关键词" />
               <select id="statusFilter">
                 <option value="all">全部状态</option>
                 <option value="draft">草稿</option>
+                <option value="rewrite">改写中</option>
+                <option value="audio">音频字幕</option>
                 <option value="review">待审核</option>
                 <option value="published">已发布</option>
                 <option value="offline">已下架</option>
               </select>
-              <select id="categoryFilter">
-                <option value="all">全部栏目</option>
-              </select>
+              <select id="categoryFilter"><option value="all">全部专题</option></select>
             </div>
             <div class="table-wrap">
               <table>
                 <thead>
                   <tr>
-                    <th>标题</th>
-                    <th>栏目</th>
-                    <th>年龄段</th>
-                    <th>状态</th>
-                    <th>音频</th>
+                    <th>标题与导语</th>
+                    <th>频道</th>
+                    <th>专题</th>
+                    <th>流程</th>
+                    <th>完整度</th>
                     <th>更新时间</th>
                     <th>操作</th>
                   </tr>
@@ -131,24 +114,38 @@
             </div>
           </section>
 
+          <section class="page" data-page-panel="pipeline">
+            <div class="section-heading"><h3>流程编排</h3><span>从原始新闻到儿童端可播放内容的生产线</span></div>
+            <div id="pipelineBoard" class="pipeline-board"></div>
+          </section>
+
+          <section class="page" data-page-panel="decode">
+            <div class="section-heading"><h3>新闻揭秘</h3><span>管理故事词与现实词的对应关系、揭秘文案和线索音频</span></div>
+            <div id="decodeBoard" class="review-grid"></div>
+          </section>
+
+          <section class="page" data-page-panel="qa">
+            <div class="section-heading"><h3>语音问答与表达打卡</h3><span>对应儿童端 NewsAiService、QA 页和 Express 页</span></div>
+            <div id="qaBoard" class="review-grid"></div>
+          </section>
+
+          <section class="page" data-page-panel="audio">
+            <div class="section-heading"><h3>音频字幕</h3><span>管理故事音频、揭秘音频、字幕行和 cueEndMs</span></div>
+            <div id="audioBoard" class="review-grid"></div>
+          </section>
+
           <section class="page" data-page-panel="review">
-            <div class="section-heading">
-              <h3>待审核内容</h3>
-              <span>把内容从编辑台推到小程序前台。</span>
-            </div>
+            <div class="section-heading"><h3>待审核内容</h3><span>通过后进入儿童端热点台或专题台</span></div>
             <div id="reviewQueue" class="review-grid"></div>
           </section>
 
           <section class="page" data-page-panel="homepage">
             <div class="homepage-layout">
               <section class="config-panel">
-                <div class="section-heading">
-                  <h3>首页推荐位</h3>
-                  <span>拖动排序会在下一版加入；当前可勾选推荐。</span>
-                </div>
+                <div class="section-heading"><h3>儿童端频道预览</h3><span>热点台和专题台会读取已发布内容</span></div>
                 <div id="homepageList" class="compact-list"></div>
               </section>
-              <section class="phone-preview" aria-label="小程序首页预览">
+              <section class="phone-preview" aria-label="儿童端新闻电台预览">
                 <div class="phone-shell">
                   <div class="phone-header">小小新闻电台</div>
                   <div id="miniPreview" class="mini-preview"></div>
@@ -159,23 +156,10 @@
 
           <section class="page" data-page-panel="settings">
             <div class="content-band">
-              <div class="section-heading">
-                <h3>栏目与年龄段</h3>
-                <span>原型阶段先内置配置，后续可改成数据库表。</span>
-              </div>
+              <div class="section-heading"><h3>电台配置</h3><span>与儿童端 NewsTopic、TTS、资源命名保持一致</span></div>
               <div class="settings-grid">
-                <div>
-                  <h4>栏目</h4>
-                  <div id="categoryTags" class="tag-cloud"></div>
-                </div>
-                <div>
-                  <h4>年龄段</h4>
-                  <div class="tag-cloud">
-                    <span>3-6 岁</span>
-                    <span>7-9 岁</span>
-                    <span>10-12 岁</span>
-                  </div>
-                </div>
+                <div><h4>专题</h4><div id="categoryTags" class="tag-cloud"></div></div>
+                <div><h4>默认声音</h4><div id="voiceTags" class="tag-cloud"></div></div>
               </div>
             </div>
           </section>
@@ -187,78 +171,56 @@
       <form id="articleForm" method="dialog">
         <header class="dialog-header">
           <div>
-            <span class="eyebrow">内容编辑</span>
+            <span class="eyebrow">KidsNews 内容编辑</span>
             <h3 id="dialogTitle">新建新闻</h3>
           </div>
           <button type="button" id="closeDialog" class="icon-button" aria-label="关闭">×</button>
         </header>
         <input type="hidden" name="id" />
         <div class="form-grid">
-          <label class="span-2">
-            标题
-            <input name="title" required maxlength="40" />
+          <label>
+            资源 ID
+            <input name="assetKey" placeholder="import-hot-swim" />
           </label>
           <label>
-            栏目
-            <select name="category"></select>
-          </label>
-          <label>
-            年龄段
-            <select name="ageGroup">
-              <option>3-6 岁</option>
-              <option>7-9 岁</option>
-              <option>10-12 岁</option>
+            频道
+            <select name="channel">
+              <option value="hot">热点新闻台</option>
+              <option value="theme">专题新闻台</option>
             </select>
           </label>
           <label>
-            难度
-            <select name="difficulty">
-              <option>轻松</option>
-              <option>标准</option>
-              <option>进阶</option>
-            </select>
+            专题
+            <select name="topic"></select>
           </label>
           <label>
-            状态
+            流程状态
             <select name="status">
               <option value="draft">草稿</option>
+              <option value="rewrite">改写中</option>
+              <option value="audio">音频字幕</option>
               <option value="review">待审核</option>
               <option value="published">已发布</option>
               <option value="offline">已下架</option>
             </select>
           </label>
-          <label class="span-2">
-            摘要
-            <textarea name="summary" rows="3" required></textarea>
-          </label>
-          <label class="span-2">
-            正文
-            <textarea name="content" rows="8" required></textarea>
-          </label>
-          <label>
-            封面图 URL
-            <input name="coverUrl" />
-          </label>
-          <label>
-            音频 URL
-            <input name="audioUrl" />
-          </label>
-          <label>
-            主播
-            <input name="host" />
-          </label>
-          <label>
-            音频时长
-            <input name="duration" placeholder="02:30" />
-          </label>
-          <label class="checkbox-label">
-            <input name="recommended" type="checkbox" />
-            今日推荐
-          </label>
-          <label>
-            审核备注
-            <input name="reviewNote" />
-          </label>
+          <label class="span-2">标题<input name="title" required maxlength="48" /></label>
+          <label class="span-2">儿童端导语 intro<textarea name="intro" rows="3" required></textarea></label>
+          <label class="span-2">思考题 thought<input name="thought" /></label>
+          <label class="span-2">关键词 keywords<input name="keywords" placeholder="用中文逗号分隔，如：7岁男孩，蓝色长廊，海上穿越" /></label>
+          <label class="span-2">故事播报 paragraphs<textarea name="paragraphs" rows="8" required></textarea></label>
+          <label class="span-2">新闻揭秘 revealText<textarea name="revealText" rows="5"></textarea></label>
+          <label class="span-2">揭秘线索 decodeClues<textarea name="decodeClues" rows="5" placeholder="每行：故事词 = 现实词 | 给孩子听的揭秘说明"></textarea></label>
+          <label class="span-2">预设问答 questions<textarea name="questions" rows="3" placeholder="每行一个问题"></textarea></label>
+          <label class="span-2">表达打卡 prompt<input name="prompt" /></label>
+          <label>故事音频 key/URL<input name="storyAudio" placeholder="news_import_story_hot_swim_iris_sister.wav" /></label>
+          <label>封面 key/URL<input name="cover" placeholder="news_import_cover_hot_swim.png" /></label>
+          <label class="span-2">字幕行 storySubtitleLines<textarea name="storySubtitleLines" rows="4" placeholder="每行一句字幕"></textarea></label>
+          <label class="span-2">字幕时间 storySubtitleCueEndMs<input name="storySubtitleCueEndMs" placeholder="5535,14500,18934" /></label>
+          <label>主播<input name="host" /></label>
+          <label>时长<input name="duration" placeholder="04:28" /></label>
+          <label class="checkbox-label"><input name="recommended" type="checkbox" />进入儿童端推荐</label>
+          <label>审核备注<input name="reviewNote" /></label>
         </div>
         <footer class="dialog-footer">
           <button type="button" id="saveDraft" class="secondary-button">保存草稿</button>
