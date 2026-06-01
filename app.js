@@ -8,137 +8,161 @@ const topics = [
 ];
 
 const statusMap = {
-  draft: "草稿",
-  rewrite: "改写中",
-  audio: "音频字幕",
+  source: "原始入库",
+  rewrite: "改写播报",
+  decode: "揭秘制作",
+  qa: "问答配置",
+  checkin: "打卡配置",
   review: "待审核",
   published: "已发布",
   offline: "已下架",
 };
 
 const pipelineSteps = [
-  { key: "source", title: "原始新闻", hint: "记录来源、事实点和敏感风险" },
-  { key: "story", title: "故事播报", hint: "鸢尾花姐姐口吻，形成 paragraphs" },
-  { key: "decode", title: "新闻揭秘", hint: "故事词到现实词，形成 decodeClues/revealText" },
-  { key: "qa", title: "语音问答", hint: "预设 questions，接入 NewsAiService" },
-  { key: "express", title: "表达打卡", hint: "prompt 引导孩子说出自己的想法" },
-  { key: "audio", title: "音频字幕", hint: "storyAudio、字幕行、cueEndMs" },
-  { key: "publish", title: "审核发布", hint: "进入热点台或专题台" },
+  { key: "source", title: "原始稿件", hint: "原始新闻稿件/链接、题目、关键词、频道、专题、封面。仅后台可见。" },
+  { key: "rewrite", title: "改写播报", hint: "上传儿童化改写稿，并绑定对应语音播报音频。" },
+  { key: "decode", title: "揭秘卡片", hint: "一张卡包含封面、故事词到现实词、解释文案和音频。" },
+  { key: "qa", title: "问答环节", hint: "固定问题，也支持录音转文字后进入实时大模型问答。" },
+  { key: "checkin", title: "打卡界面", hint: "孩子完成表达打卡后进入完成页。" },
+  { key: "publish", title: "发布", hint: "审核通过后进入儿童端新闻电台。" },
 ];
 
 const seedArticles = [
   {
     id: "import-hot-swim",
-    assetKey: "import-hot-swim",
+    sourceTitle: "7岁男孩横渡保克海峡创纪录",
+    sourceUrl: "https://example.com/news/paik-strait-record",
+    sourceText: "一名7岁男孩在专业安全团队陪同下完成保克海峡横渡，成为该路线最年轻完成者。",
+    keywords: ["7岁男孩", "蓝色长廊", "海上穿越"],
     channel: "hot",
     topic: "国际时政",
+    cover: "news_import_cover_hot_swim.png",
     title: "七岁男孩的蓝色冒险",
     intro: "一个7岁男孩，在安全陪伴下游过了一条长长的海上道路，完成了一次勇敢的蓝色冒险。",
-    thought: "很难的挑战，为什么要先准备好再出发？",
-    keywords: ["7岁男孩", "蓝色长廊", "海上穿越"],
-    paragraphs: [
-      "小朋友们好呀，我是鸢尾花姐姐。今天要讲的，是一个7岁男孩和大海之间的真实故事。",
-      "这个男孩特别喜欢游泳，心里藏着一个大胆的愿望：有一天，我要游过一条真正通向远方的海上道路。",
-      "他不是随便出发的。大海里有浪，也有看不见的水流，所以身边一直有海上守护队陪伴着他。",
-      "他游了很久，累了也没有慌张，只是告诉自己：我只要再向前一点点。",
-      "真正的勇敢，是懂得准备，也懂得保护自己。你也会遇到自己的小挑战，认真准备，再坚持一点点。",
-    ],
-    revealText:
-      "故事里的“蓝色长廊”，现实中叫作保克海峡。故事里的“海上穿越”，现实中叫作横渡。故事里的“七十圈的水上跑道”，说的是真实距离大约29公里。故事里的“海上守护队”，指的是专业安全陪护。小朋友不能自己到海里尝试远距离游泳。",
-    decodeClues: [
-      { key: "blue-corridor", word: "蓝色长廊", answer: "保克海峡", speechText: "保克海峡不是走路的长廊，而是夹在两片陆地之间的一条海水通道。" },
-      { key: "crossing", word: "海上穿越", answer: "横渡", speechText: "横渡的意思，是从一片水域的一边出发，靠自己的力量穿过水面，到达另一边。" },
-      { key: "distance", word: "七十圈的水上跑道", answer: "约29公里", speechText: "如果学校操场一圈是400米，29公里差不多要跑72圈半。" },
-      { key: "safety", word: "海上守护队", answer: "安全陪护", speechText: "海里会有浪和水流，远距离游泳必须有专业人员一路保护。" },
-      { key: "record", word: "最小勇士成绩单", answer: "世界纪录", speechText: "纪录就是被记下来的特别成绩，比如谁跑得最快，或谁在最小年龄完成了很难的事情。" },
-    ],
-    questions: ["我也能去游大海吗？", "不会游泳怎么办？", "他为什么能坚持？"],
-    prompt: "说说你想挑战的一件事，怎样先做好安全准备。",
+    rewrittenText:
+      "小朋友们好呀，我是鸢尾花姐姐。今天要讲的，是一个7岁男孩和大海之间的真实故事。\n\n他特别喜欢游泳，心里藏着一个愿望：有一天，我要游过一条真正通向远方的海上道路。\n\n他不是随便出发的。大海里有浪，也有看不见的水流，所以身边一直有海上守护队陪伴着他。\n\n真正的勇敢，是懂得准备，也懂得保护自己。",
     storyAudio: "news_import_story_hot_swim_iris_sister.wav",
-    cover: "news_import_cover_hot_swim.png",
-    storySubtitleLines: ["小朋友们好呀，我是鸢尾花姐姐。", "今天要讲的，是一个7岁男孩和大海之间的真实故事。", "真正的勇敢，是懂得准备，也懂得保护自己。"],
-    storySubtitleCueEndMs: [5535, 14500, 264896],
     host: "鸢尾花姐姐",
     duration: "04:25",
+    revealCards: [
+      {
+        cover: "news_import_cover_hot_swim.png",
+        from: "蓝色长廊",
+        to: "保克海峡",
+        explanation: "故事里的蓝色长廊，现实中叫作保克海峡。它不是走路的长廊，而是夹在两片陆地之间的一条海水通道。",
+        audio: "news_import_reveal_hot_swim_blue_corridor_iris_sister.wav",
+      },
+      {
+        cover: "news_import_cover_hot_swim.png",
+        from: "海上穿越",
+        to: "横渡",
+        explanation: "横渡的意思，是从一片水域的一边出发，靠自己的力量穿过水面，到达另一边。",
+        audio: "news_import_reveal_hot_swim_crossing_iris_sister.wav",
+      },
+      {
+        cover: "news_import_cover_hot_swim.png",
+        from: "七十圈的水上跑道",
+        to: "约29公里",
+        explanation: "如果学校操场一圈是400米，29公里差不多要跑72圈半。",
+        audio: "news_import_reveal_hot_swim_distance_iris_sister.wav",
+      },
+    ],
+    fixedQuestions: ["我也能去游大海吗？", "不会游泳怎么办？", "他为什么能坚持？"],
+    asrEnabled: true,
+    llmEnabled: true,
+    qaPrompt: "请基于这条儿童新闻，用孩子能懂的话回答。只使用中文，语气像鸢尾花姐姐一样温柔、清楚。",
+    checkinPrompt: "说说你想挑战的一件事，怎样先做好安全准备。",
+    checkinFeedback: "你说得真认真，勇敢也要记得保护自己。",
     status: "published",
     recommended: true,
-    reviewNote: "来自儿童端 imported_kids_news.json 的结构化示例。",
-    plays: 12840,
-    updatedAt: "2026-06-01 10:20",
+    reviewNote: "完整流程示例，可进入儿童端。",
+    updatedAt: "2026-06-01 10:40",
   },
   {
     id: "import-hot-snack",
-    assetKey: "import-hot-snack",
+    sourceTitle: "小朋友零食碎屑引发蚂蚁死亡讨论",
+    sourceUrl: "https://example.com/news/snack-ants",
+    sourceText: "一段蚂蚁接触零食碎屑后死亡的视频引发关注，讨论集中在食品配料表和添加剂。",
+    keywords: ["小蚂蚁", "香香小肉片", "配料表"],
     channel: "hot",
     topic: "生活",
+    cover: "news_import_cover_hot_snack.png",
     title: "小蚂蚁的香香问号",
     intro: "一包香香的小肉片让小蚂蚁倒下，也让大家开始留心包装背后的秘密小名单。",
-    thought: "挑零食时，我们可以先看看包装背后的什么？",
-    keywords: ["小蚂蚁", "香香小肉片", "秘密小名单"],
-    paragraphs: [
-      "小朋友们好呀，我是鸢尾花姐姐。今天的故事，要从几只寻找食物的小蚂蚁说起。",
-      "一个小朋友打开了一包香香小肉片，不小心有几小块掉到了地上。没过多久，小蚂蚁发现了它们。",
-      "奇怪的事情发生了：这些小蚂蚁竟然陆续倒了下来。于是大人们拿起袋子，翻到背面，找到了一张秘密小名单。",
-      "这段新闻提醒我们：买零食时，不光要看包装漂不漂亮，也可以和爸爸妈妈一起看看配料表。",
-    ],
-    revealText:
-      "故事里的“秘密小名单”，现实中叫作配料表。故事里的“香气小喇叭”和“小小保鲜员”对应食品添加剂名称。蚂蚁倒下不能直接说明小朋友吃了同样零食就一定有危险，更重要的是选择正规食品，不长期大量吃味道特别重的零食。",
-    decodeClues: [
-      { key: "island", word: "椰风小岛", answer: "海南", speechText: "海南是一座气候温暖、能看到很多椰子树的海岛省份。" },
-      { key: "meat-slice", word: "香香小肉片", answer: "手撕肉干零食", speechText: "新闻中的小朋友吃的是一种肉干零食，碎渣吸引了蚂蚁。" },
-      { key: "ingredients", word: "秘密小名单", answer: "配料表", speechText: "配料表通常印在包装背面，会写出这份食物使用了哪些原料和成分。" },
-    ],
-    questions: ["秘密小名单是什么？", "陌生名字都是坏东西吗？", "怎样挑选零食？"],
-    prompt: "说说下一次挑零食时，你准备和爸爸妈妈一起看看什么。",
+    rewrittenText:
+      "小朋友们好呀，我是鸢尾花姐姐。今天的故事，要从几只寻找食物的小蚂蚁说起。\n\n一包香香小肉片掉了几块碎屑，几只小蚂蚁发现后围了上来。过了一会儿，奇怪的事情发生了。\n\n这段新闻提醒我们：买零食时，可以和爸爸妈妈一起看看包装背后的配料表。",
     storyAudio: "news_import_story_hot_snack_iris_sister.wav",
-    cover: "news_import_cover_hot_snack.png",
-    storySubtitleLines: ["今天的故事，要从几只寻找食物的小蚂蚁说起。", "买零食时，可以和爸爸妈妈一起看看配料表。"],
-    storySubtitleCueEndMs: [9252, 121421],
     host: "鸢尾花姐姐",
     duration: "03:10",
+    revealCards: [
+      {
+        cover: "news_import_cover_hot_snack.png",
+        from: "秘密小名单",
+        to: "配料表",
+        explanation: "配料表通常印在食品包装背面，会写出这份食物使用了哪些原料和成分。",
+        audio: "news_import_reveal_hot_snack_ingredients_iris_sister.wav",
+      },
+      {
+        cover: "news_import_cover_hot_snack.png",
+        from: "香香小肉片",
+        to: "手撕肉干零食",
+        explanation: "新闻中的小朋友吃的是一种肉干零食，掉在地上的碎渣吸引了蚂蚁。",
+        audio: "news_import_reveal_hot_snack_meat_slice_iris_sister.wav",
+      },
+    ],
+    fixedQuestions: ["秘密小名单是什么？", "陌生名字都是坏东西吗？", "怎样挑选零食？"],
+    asrEnabled: true,
+    llmEnabled: true,
+    qaPrompt: "回答时避免绝对化食品安全判断，引导孩子和家长一起查看正规标签。",
+    checkinPrompt: "说说下一次挑零食时，你准备和爸爸妈妈一起看看什么。",
+    checkinFeedback: "你已经像小小食物侦探一样开始观察啦。",
     status: "review",
     recommended: false,
     reviewNote: "审核重点：食品安全表述不要绝对化。",
-    plays: 0,
-    updatedAt: "2026-06-01 10:18",
+    updatedAt: "2026-06-01 10:38",
   },
   {
     id: "middle-east-2026",
-    assetKey: "middle-east-2026",
+    sourceTitle: "中东局势影响能源与航运",
+    sourceUrl: "https://example.com/news/middle-east-energy",
+    sourceText: "中东冲突牵动能源、航运和许多普通家庭，停火与谈判正在艰难推进。",
+    keywords: ["和平", "安全", "世界"],
     channel: "hot",
     topic: "国际时政",
+    cover: "news_story_middle_east_cover.png",
     title: "阳光沙丘的风暴与和平",
     intro: "中东冲突牵动能源、航运和许多普通家庭，停火与谈判正在艰难推进。",
-    thought: "远方发生的冲突，为什么也可能影响我们身边的生活？",
-    keywords: ["和平", "安全", "世界"],
-    paragraphs: [
-      "我们的地球村呀，是一个超级大花园。今天，鸢尾花姐姐要带大家飞到地球村里一个叫阳光沙丘的地方。",
-      "在那里，小刺猬、大狮子和大老鹰因为安全、能源和信任发生了大争吵。",
-      "当大个子们打起架来，最倒霉的是住在沙丘里的其他小动物。",
-      "故事想告诉大家：遇到分歧时，用拳头和石头解决不了问题，坐下来倾听和沟通才更了不起。",
-    ],
-    revealText: "故事里的阳光沙丘、水上走廊、黑糖浆，现实中分别对应中东地区、霍尔木兹海峡和石油运输。",
-    decodeClues: [
-      { key: "sun-dune", word: "阳光沙丘", answer: "中东地区", speechText: "阳光沙丘其实指的是中东地区。这里有大片沙漠，也连接着重要的能源和航运路线。" },
-      { key: "water-corridor", word: "水上走廊", answer: "霍尔木兹海峡", speechText: "水上走廊的真实名字叫霍尔木兹海峡。许多装着石油的船会从这条海路经过。" },
-      { key: "black-syrup", word: "黑糖浆", answer: "石油", speechText: "黑糖浆其实就是石油。运输发生变化时，也可能影响大家的生活成本。" },
-      { key: "hedgehog", word: "小刺猬", answer: "以色列", speechText: "故事里的小刺猬代表以色列。" },
-      { key: "lion", word: "大狮子", answer: "伊朗", speechText: "大狮子代表伊朗。" },
-      { key: "eagle", word: "大老鹰", answer: "美国", speechText: "大老鹰代表美国。" },
-    ],
-    questions: ["远方打架，东西为什么会变贵？", "害怕别人，可以先打他吗？", "大家为什么要坐下来商量？"],
-    prompt: "说说你觉得遇到矛盾时，怎样才能让伤害少一点。",
+    rewrittenText:
+      "我们的地球村呀，是一个超级大花园。今天，鸢尾花姐姐要带大家飞到地球村里一个叫阳光沙丘的地方。\n\n在那里，小刺猬、大狮子和大老鹰因为安全、能源和信任发生了大争吵。\n\n故事想告诉大家：遇到分歧时，用拳头和石头解决不了问题，坐下来倾听和沟通才更了不起。",
     storyAudio: "news_sun_dune_sweet_sister.wav",
-    cover: "news_story_middle_east_cover.png",
-    storySubtitleLines: ["我们的地球村呀，是一个超级大花园。", "当大个子们打起架来，最倒霉的是住在沙丘里的其他小动物。", "坐下来倾听和沟通，才是很了不起的魔法。"],
-    storySubtitleCueEndMs: [524, 122353, 410700],
     host: "甜甜姐姐",
     duration: "06:50",
-    status: "audio",
+    revealCards: [
+      {
+        cover: "news_story_middle_east_cover.png",
+        from: "阳光沙丘",
+        to: "中东地区",
+        explanation: "阳光沙丘其实指的是中东地区。这里有大片沙漠，也连接着重要的能源和航运路线。",
+        audio: "news_decode_sun_dune_sweet_sister.wav",
+      },
+      {
+        cover: "news_story_middle_east_cover.png",
+        from: "黑糖浆",
+        to: "石油",
+        explanation: "黑糖浆其实就是石油。运输发生变化时，也可能影响大家的生活成本。",
+        audio: "news_decode_black_syrup_sweet_sister.wav",
+      },
+    ],
+    fixedQuestions: ["远方打架，东西为什么会变贵？", "害怕别人，可以先打他吗？", "大家为什么要坐下来商量？"],
+    asrEnabled: true,
+    llmEnabled: true,
+    qaPrompt: "回答国际时政问题时要避免刺激性表达，强调安全、沟通、和平和普通人的感受。",
+    checkinPrompt: "说说你觉得遇到矛盾时，怎样才能让伤害少一点。",
+    checkinFeedback: "你愿意认真想一想和平，这很珍贵。",
+    status: "decode",
     recommended: false,
-    reviewNote: "需要复核国际时政风险提示和字幕 cue。",
-    plays: 0,
-    updatedAt: "2026-06-01 10:16",
+    reviewNote: "还需要补齐更多揭秘卡片和问答录音。",
+    updatedAt: "2026-06-01 10:36",
   },
 ];
 
@@ -156,51 +180,44 @@ const escapeHtml = (value) =>
   String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" })[char]);
 
 function splitLines(value) {
-  return String(value || "")
-    .split(/\n+/)
-    .map((item) => item.trim())
-    .filter(Boolean);
+  return String(value || "").split(/\n+/).map((item) => item.trim()).filter(Boolean);
 }
 
 function splitCsv(value) {
-  return String(value || "")
-    .split(/[，,\n]/)
-    .map((item) => item.trim())
-    .filter(Boolean);
+  return String(value || "").split(/[，,\n]/).map((item) => item.trim()).filter(Boolean);
 }
 
-function parseCueMs(value) {
-  return String(value || "")
-    .split(/[，,\s]+/)
-    .map((item) => Number.parseInt(item, 10))
-    .filter((item) => Number.isFinite(item));
+function boolText(value) {
+  return value === true || String(value || "").trim() === "" || ["开", "开启", "true", "1", "yes"].includes(String(value).trim().toLowerCase());
 }
 
-function decodeCluesToText(clues) {
-  return (clues || []).map((clue) => `${clue.word} = ${clue.answer} | ${clue.speechText || ""}`).join("\n");
+function revealCardsToText(cards) {
+  return (cards || []).map((card) => `${card.cover || ""} | ${card.from || ""} -> ${card.to || ""} | ${card.explanation || ""} | ${card.audio || ""}`).join("\n");
 }
 
-function parseDecodeClues(value, articleId) {
+function parseRevealCards(value) {
   return splitLines(value).map((line, index) => {
-    const [left, speechText = ""] = line.split("|").map((part) => part.trim());
-    const [word, answer = ""] = left.split("=").map((part) => part.trim());
+    const [cover = "", pair = "", explanation = "", audio = ""] = line.split("|").map((part) => part.trim());
+    const [from = "", to = ""] = pair.split(/->|➡️|→/).map((part) => part.trim());
     return {
-      key: `${articleId || "news"}-${index + 1}`,
-      word: word || `线索${index + 1}`,
-      answer: answer || "待补充",
-      speechText,
+      id: `reveal-${index + 1}`,
+      cover,
+      from: from || `故事词${index + 1}`,
+      to: to || "现实词待补充",
+      explanation,
+      audio,
     };
   });
+}
+
+function paragraphs(article) {
+  return splitLines(article.rewrittenText);
 }
 
 function nowText() {
   const date = new Date();
   const pad = (value) => String(value).padStart(2, "0");
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
-}
-
-function formatNumber(value) {
-  return new Intl.NumberFormat("zh-CN").format(value);
 }
 
 function statusBadge(status) {
@@ -217,43 +234,45 @@ function channelName(channel) {
 
 function completion(article) {
   const checks = [
-    Boolean(article.title && article.intro),
-    (article.paragraphs || []).length > 0,
-    Boolean(article.revealText),
-    (article.decodeClues || []).length >= 3,
-    (article.questions || []).length >= 3,
-    Boolean(article.prompt),
-    Boolean(article.storyAudio),
-    (article.storySubtitleLines || []).length > 0,
+    Boolean(article.sourceTitle && (article.sourceText || article.sourceUrl)),
+    Boolean(article.title && article.rewrittenText && article.storyAudio),
+    (article.revealCards || []).length > 0 && (article.revealCards || []).every((card) => card.cover && card.from && card.to && card.explanation && card.audio),
+    (article.fixedQuestions || []).length > 0 && article.asrEnabled && article.llmEnabled,
+    Boolean(article.checkinPrompt),
   ];
   return Math.round((checks.filter(Boolean).length / checks.length) * 100);
 }
 
-function readyForChild(article) {
-  return completion(article) >= 88 && ["review", "published"].includes(article.status);
+function stageReady(article, key) {
+  const checks = {
+    source: Boolean(article.sourceTitle && (article.sourceText || article.sourceUrl) && article.cover && article.topic),
+    rewrite: Boolean(article.title && article.rewrittenText && article.storyAudio),
+    decode: (article.revealCards || []).length > 0 && (article.revealCards || []).every((card) => card.cover && card.from && card.to && card.explanation && card.audio),
+    qa: (article.fixedQuestions || []).length > 0 && article.asrEnabled && article.llmEnabled,
+    checkin: Boolean(article.checkinPrompt),
+    publish: article.status === "published",
+  };
+  return checks[key];
+}
+
+function readyForReview(article) {
+  return completion(article) >= 100;
 }
 
 function loadArticles() {
-  const stored = localStorage.getItem("kids-news-admin-v2");
+  const stored = localStorage.getItem("kids-news-admin-v3");
   state.articles = stored ? JSON.parse(stored) : seedArticles;
   persist();
 }
 
 function persist() {
-  localStorage.setItem("kids-news-admin-v2", JSON.stringify(state.articles));
+  localStorage.setItem("kids-news-admin-v3", JSON.stringify(state.articles));
 }
 
 function filteredArticles() {
   return state.articles.filter((article) => {
     const term = state.search.trim().toLowerCase();
-    const haystack = [
-      article.title,
-      article.intro,
-      article.thought,
-      article.topic,
-      article.channel,
-      ...(article.keywords || []),
-    ].join(" ").toLowerCase();
+    const haystack = [article.sourceTitle, article.title, article.topic, article.channel, ...(article.keywords || [])].join(" ").toLowerCase();
     return (
       (!term || haystack.includes(term)) &&
       (state.statusFilter === "all" || article.status === state.statusFilter) &&
@@ -265,21 +284,20 @@ function filteredArticles() {
 function renderAll() {
   renderMetrics();
   renderRecent();
-  renderTables();
-  renderPipeline();
+  renderSourceRows();
+  renderRewrite();
   renderDecode();
   renderQa();
-  renderAudio();
-  renderReview();
-  renderHomepage();
+  renderCheckin();
+  renderPreview();
   renderSettings();
 }
 
 function renderMetrics() {
-  $("#publishedCount").textContent = state.articles.filter((item) => item.status === "published").length;
+  $("#sourceCount").textContent = state.articles.filter((item) => stageReady(item, "source")).length;
   $("#reviewCount").textContent = state.articles.filter((item) => item.status === "review").length;
-  $("#readyCount").textContent = state.articles.filter(readyForChild).length;
-  $("#playCount").textContent = formatNumber(state.articles.reduce((sum, item) => sum + Number(item.plays || 0), 0));
+  $("#readyCount").textContent = state.articles.filter(readyForReview).length;
+  $("#publishedCount").textContent = state.articles.filter((item) => item.status === "published").length;
 }
 
 function renderRecent() {
@@ -289,7 +307,7 @@ function renderRecent() {
     .map((article) => `
       <article class="compact-item">
         <div>
-          <strong>${topicIcon(article.topic)} ${escapeHtml(article.title)}</strong>
+          <strong>${topicIcon(article.topic)} ${escapeHtml(article.sourceTitle)}</strong>
           <span class="muted">${channelName(article.channel)} · ${escapeHtml(article.topic)} · 完整度 ${completion(article)}%</span>
         </div>
         ${statusBadge(article.status)}
@@ -298,152 +316,114 @@ function renderRecent() {
     .join("");
 }
 
-function renderTables() {
-  const rows = filteredArticles()
-    .map((article) => `
-      <tr>
-        <td class="row-title">
-          <strong>${topicIcon(article.topic)} ${escapeHtml(article.title)}</strong>
-          <span class="muted">${escapeHtml(article.intro)}</span>
-        </td>
-        <td>${channelName(article.channel)}</td>
-        <td>${escapeHtml(article.topic)}</td>
-        <td>${statusBadge(article.status)}</td>
-        <td><div class="progress-line"><span style="width:${completion(article)}%"></span></div><small>${completion(article)}%</small></td>
-        <td>${escapeHtml(article.updatedAt)}</td>
-        <td>
-          <div class="row-actions">
-            <button class="text-button" data-action="edit" data-id="${article.id}">编辑</button>
-            <button class="text-button" data-action="copy" data-id="${article.id}">复制</button>
-            <button class="text-button danger" data-action="delete" data-id="${article.id}">删除</button>
-          </div>
-        </td>
-      </tr>
-    `)
-    .join("");
+function renderSourceRows() {
+  const rows = filteredArticles().map((article) => `
+    <tr>
+      <td class="row-title">
+        <strong>${escapeHtml(article.sourceTitle)}</strong>
+        <span class="muted">${escapeHtml(article.sourceUrl || "未填原始链接")}</span>
+      </td>
+      <td>${channelName(article.channel)}</td>
+      <td>${topicIcon(article.topic)} ${escapeHtml(article.topic)}</td>
+      <td>${(article.keywords || []).map((item) => `<span class="mini-tag">${escapeHtml(item)}</span>`).join("")}</td>
+      <td>${statusBadge(article.status)}</td>
+      <td><div class="progress-line"><span style="width:${completion(article)}%"></span></div><small>${completion(article)}%</small></td>
+      <td>
+        <div class="row-actions">
+          <button class="text-button" data-action="edit" data-id="${article.id}">编辑</button>
+          <button class="text-button" data-action="copy" data-id="${article.id}">复制</button>
+          <button class="text-button danger" data-action="delete" data-id="${article.id}">删除</button>
+        </div>
+      </td>
+    </tr>
+  `).join("");
   $("#newsRows").innerHTML = rows || `<tr><td colspan="7" class="muted">没有找到匹配内容。</td></tr>`;
 }
 
-function renderPipeline() {
-  $("#pipelineBoard").innerHTML = pipelineSteps
-    .map((step) => {
-      const count = state.articles.filter((article) => stepReady(article, step.key)).length;
-      return `
-        <article class="pipeline-card">
-          <span>${count}/${state.articles.length}</span>
-          <strong>${step.title}</strong>
-          <p>${step.hint}</p>
-        </article>
-      `;
-    })
-    .join("");
-}
-
-function stepReady(article, key) {
-  const checks = {
-    source: Boolean(article.assetKey && article.topic),
-    story: (article.paragraphs || []).length > 0,
-    decode: Boolean(article.revealText) && (article.decodeClues || []).length >= 3,
-    qa: (article.questions || []).length >= 3,
-    express: Boolean(article.prompt),
-    audio: Boolean(article.storyAudio) && (article.storySubtitleLines || []).length > 0,
-    publish: article.status === "published",
-  };
-  return checks[key];
+function renderRewrite() {
+  $("#rewriteBoard").innerHTML = state.articles.map((article) => `
+    <article class="review-card">
+      <strong>${escapeHtml(article.title || article.sourceTitle)}</strong>
+      <span class="muted">${escapeHtml(article.storyAudio || "未上传播报音频")} · ${escapeHtml(article.host || "未设置主播")}</span>
+      <p>${escapeHtml(article.intro || "还没有填写儿童端导语。")}</p>
+      <div class="review-actions"><button class="secondary-button" data-action="edit" data-id="${article.id}">编辑改写稿</button></div>
+    </article>
+  `).join("");
 }
 
 function renderDecode() {
-  $("#decodeBoard").innerHTML = state.articles
-    .map((article) => `
-      <article class="review-card">
-        <strong>${escapeHtml(article.title)}</strong>
-        <span class="muted">${escapeHtml(article.topic)} · ${article.decodeClues?.length || 0} 条线索</span>
-        <p>${escapeHtml(article.revealText || "还没有填写新闻揭秘文案。")}</p>
-        <div class="clue-list">${(article.decodeClues || []).map((clue) => `<span>${escapeHtml(clue.word)} → ${escapeHtml(clue.answer)}</span>`).join("")}</div>
-        <div class="review-actions"><button class="secondary-button" data-action="edit" data-id="${article.id}">编辑线索</button></div>
-      </article>
-    `)
-    .join("");
+  $("#decodeBoard").innerHTML = state.articles.map((article) => `
+    <article class="review-card">
+      <strong>${escapeHtml(article.title || article.sourceTitle)}</strong>
+      <span class="muted">${article.revealCards?.length || 0} 张揭秘卡片</span>
+      <div class="reveal-card-list">
+        ${(article.revealCards || []).map((card) => `
+          <div class="reveal-card-row">
+            <strong>${escapeHtml(card.from)} ➡ ${escapeHtml(card.to)}</strong>
+            <span>${escapeHtml(card.explanation || "未填写解释")}</span>
+            <small>${escapeHtml(card.audio || "未上传音频")}</small>
+          </div>
+        `).join("") || `<p class="muted">还没有揭秘卡片。</p>`}
+      </div>
+      <div class="review-actions"><button class="secondary-button" data-action="edit" data-id="${article.id}">编辑揭秘卡</button></div>
+    </article>
+  `).join("");
 }
 
 function renderQa() {
-  $("#qaBoard").innerHTML = state.articles
-    .map((article) => `
-      <article class="review-card">
-        <strong>${escapeHtml(article.title)}</strong>
-        <span class="muted">NewsAiService conversation_id: news_radio_${escapeHtml(article.id)}</span>
-        <p>${escapeHtml(article.prompt || "还没有表达打卡 prompt。")}</p>
-        <div class="clue-list">${(article.questions || []).map((question) => `<span>${escapeHtml(question)}</span>`).join("")}</div>
-        <div class="review-actions"><button class="secondary-button" data-action="edit" data-id="${article.id}">编辑问答</button></div>
-      </article>
-    `)
-    .join("");
+  $("#qaBoard").innerHTML = state.articles.map((article) => `
+    <article class="review-card">
+      <strong>${escapeHtml(article.title || article.sourceTitle)}</strong>
+      <span class="muted">录音转文字：${article.asrEnabled ? "开启" : "关闭"} · 实时问答：${article.llmEnabled ? "开启" : "关闭"}</span>
+      <p>${escapeHtml(article.qaPrompt || "未设置问答提示词。")}</p>
+      <div class="clue-list">${(article.fixedQuestions || []).map((question) => `<span>${escapeHtml(question)}</span>`).join("")}</div>
+      <div class="review-actions"><button class="secondary-button" data-action="edit" data-id="${article.id}">编辑问答</button></div>
+    </article>
+  `).join("");
 }
 
-function renderAudio() {
-  $("#audioBoard").innerHTML = state.articles
-    .map((article) => `
-      <article class="review-card">
-        <strong>${escapeHtml(article.title)}</strong>
-        <span class="muted">${escapeHtml(article.host || "鸢尾花姐姐")} · ${escapeHtml(article.duration || "未填时长")}</span>
-        <p>故事音频：${escapeHtml(article.storyAudio || "未配置")}<br>封面：${escapeHtml(article.cover || "未配置")}</p>
-        <div class="clue-list">
-          <span>字幕 ${article.storySubtitleLines?.length || 0} 行</span>
-          <span>cueEndMs ${article.storySubtitleCueEndMs?.length || 0} 个</span>
-        </div>
-        <div class="review-actions"><button class="secondary-button" data-action="edit" data-id="${article.id}">编辑音频字幕</button></div>
-      </article>
-    `)
-    .join("");
+function renderCheckin() {
+  $("#checkinBoard").innerHTML = state.articles.map((article) => `
+    <article class="review-card">
+      <strong>${escapeHtml(article.title || article.sourceTitle)}</strong>
+      <span class="muted">${statusMap[article.status] || article.status} · 完整度 ${completion(article)}%</span>
+      <p>${escapeHtml(article.checkinPrompt || "还没有配置打卡引导语。")}</p>
+      <p class="muted">${escapeHtml(article.checkinFeedback || "还没有配置完成反馈。")}</p>
+      <div class="review-actions">
+        <button class="primary-button" data-action="submit-review" data-id="${article.id}">提交审核</button>
+        <button class="secondary-button" data-action="publish" data-id="${article.id}">直接发布</button>
+      </div>
+    </article>
+  `).join("");
 }
 
-function renderReview() {
-  const queue = state.articles.filter((article) => article.status === "review");
-  $("#reviewQueue").innerHTML =
-    queue.map((article) => `
-      <article class="review-card">
-        <strong>${escapeHtml(article.title)}</strong>
-        <span class="muted">${channelName(article.channel)} · ${escapeHtml(article.topic)} · 完整度 ${completion(article)}%</span>
-        <p>${escapeHtml(article.intro)}</p>
-        <div class="review-actions">
-          <button class="primary-button" data-action="publish" data-id="${article.id}">通过发布</button>
-          <button class="secondary-button" data-action="back-draft" data-id="${article.id}">退回改写</button>
-        </div>
-      </article>
-    `).join("") || `<article class="review-card"><strong>暂无待审核内容</strong><p>音频字幕完成后提交审核。</p></article>`;
-}
-
-function renderHomepage() {
+function renderPreview() {
   const published = state.articles.filter((article) => article.status === "published");
-  $("#homepageList").innerHTML = published
-    .map((article) => `
-      <article class="compact-item">
-        <div>
-          <strong>${topicIcon(article.topic)} ${escapeHtml(article.title)}</strong>
-          <span class="muted">${channelName(article.channel)} · ${escapeHtml(article.topic)} · ${escapeHtml(article.duration || "未填时长")}</span>
-        </div>
-        <label class="checkbox-label">
-          <input type="checkbox" data-action="toggle-recommended" data-id="${article.id}" ${article.recommended ? "checked" : ""} />
-          推荐
-        </label>
-      </article>
-    `)
-    .join("") || `<article class="compact-item"><strong>暂无已发布内容</strong><span class="muted">审核通过后会显示在这里。</span></article>`;
-
-  const recommended = published.filter((article) => article.recommended);
-  $("#miniPreview").innerHTML =
-    recommended.map((article) => `
-      <article class="mini-card">
+  $("#homepageList").innerHTML = published.map((article) => `
+    <article class="compact-item">
+      <div>
         <strong>${topicIcon(article.topic)} ${escapeHtml(article.title)}</strong>
-        <p class="muted">${escapeHtml(article.intro)}</p>
-        <div class="mini-meta"><span>${channelName(article.channel)}</span><span>${escapeHtml(article.duration || "待上传")}</span></div>
-      </article>
-    `).join("") || `<article class="mini-card"><strong>今日推荐待配置</strong><p class="muted">已发布并勾选推荐后，会进入儿童端预览。</p></article>`;
+        <span class="muted">${channelName(article.channel)} · ${escapeHtml(article.topic)} · ${escapeHtml(article.duration || "未填时长")}</span>
+      </div>
+      <label class="checkbox-label">
+        <input type="checkbox" data-action="toggle-recommended" data-id="${article.id}" ${article.recommended ? "checked" : ""} />
+        推荐
+      </label>
+    </article>
+  `).join("") || `<article class="compact-item"><strong>暂无已发布内容</strong><span class="muted">通过审核后会显示在这里。</span></article>`;
+
+  $("#miniPreview").innerHTML = published.filter((article) => article.recommended).map((article) => `
+    <article class="mini-card">
+      <strong>${topicIcon(article.topic)} ${escapeHtml(article.title)}</strong>
+      <p class="muted">${escapeHtml(article.intro)}</p>
+      <div class="mini-meta"><span>揭秘 ${article.revealCards?.length || 0} 张</span><span>${escapeHtml(article.duration || "待上传")}</span></div>
+    </article>
+  `).join("") || `<article class="mini-card"><strong>今日推荐待配置</strong><p class="muted">发布并勾选推荐后进入这里。</p></article>`;
 }
 
 function renderSettings() {
   $("#categoryTags").innerHTML = topics.map((topic) => `<span>${topic.icon} ${topic.name}</span>`).join("");
-  $("#voiceTags").innerHTML = ["鸢尾花姐姐", "甜甜姐姐", "cosyvoice-v3-flash", "longyingxiao_v3", "speech_rate 0.82"].map((tag) => `<span>${tag}</span>`).join("");
+  $("#voiceTags").innerHTML = ["ASR 语音转文字", "LLM 实时问答", "鸢尾花姐姐口吻", "中文回答", "打卡完成反馈"].map((tag) => `<span>${tag}</span>`).join("");
 }
 
 function switchPage(page) {
@@ -463,29 +443,31 @@ function openEditor(article = null) {
   const form = $("#articleForm");
   form.reset();
   const nextId = article?.id || `news-${Date.now()}`;
-  $("#dialogTitle").textContent = article ? "编辑新闻" : "新建新闻";
+  $("#dialogTitle").textContent = article ? "编辑新闻流程" : "新建新闻";
   form.elements.id.value = nextId;
-  form.elements.assetKey.value = article?.assetKey || nextId;
+  form.elements.sourceTitle.value = article?.sourceTitle || "";
+  form.elements.sourceUrl.value = article?.sourceUrl || "";
+  form.elements.sourceText.value = article?.sourceText || "";
+  form.elements.keywords.value = (article?.keywords || []).join("，");
+  form.elements.cover.value = article?.cover || "";
   form.elements.channel.value = article?.channel || "hot";
   form.elements.topic.value = article?.topic || "生活";
-  form.elements.status.value = article?.status || "draft";
   form.elements.title.value = article?.title || "";
   form.elements.intro.value = article?.intro || "";
-  form.elements.thought.value = article?.thought || "";
-  form.elements.keywords.value = (article?.keywords || []).join("，");
-  form.elements.paragraphs.value = (article?.paragraphs || []).join("\n");
-  form.elements.revealText.value = article?.revealText || "";
-  form.elements.decodeClues.value = decodeCluesToText(article?.decodeClues);
-  form.elements.questions.value = (article?.questions || []).join("\n");
-  form.elements.prompt.value = article?.prompt || "";
+  form.elements.rewrittenText.value = article?.rewrittenText || "";
   form.elements.storyAudio.value = article?.storyAudio || "";
-  form.elements.cover.value = article?.cover || "";
-  form.elements.storySubtitleLines.value = (article?.storySubtitleLines || []).join("\n");
-  form.elements.storySubtitleCueEndMs.value = (article?.storySubtitleCueEndMs || []).join(",");
   form.elements.host.value = article?.host || "鸢尾花姐姐";
   form.elements.duration.value = article?.duration || "";
-  form.elements.recommended.checked = Boolean(article?.recommended);
+  form.elements.status.value = article?.status || "source";
+  form.elements.revealCards.value = revealCardsToText(article?.revealCards);
+  form.elements.fixedQuestions.value = (article?.fixedQuestions || []).join("\n");
+  form.elements.asrEnabled.value = article?.asrEnabled === false ? "关闭" : "开启";
+  form.elements.llmEnabled.value = article?.llmEnabled === false ? "关闭" : "开启";
+  form.elements.qaPrompt.value = article?.qaPrompt || "请基于这条儿童新闻，用孩子能懂的话回答。只使用中文，语气像鸢尾花姐姐一样温柔、清楚。";
+  form.elements.checkinPrompt.value = article?.checkinPrompt || "";
+  form.elements.checkinFeedback.value = article?.checkinFeedback || "";
   form.elements.reviewNote.value = article?.reviewNote || "";
+  form.elements.recommended.checked = Boolean(article?.recommended);
   $("#editorDialog").showModal();
 }
 
@@ -495,29 +477,31 @@ function formToArticle(statusOverride) {
   const existing = state.articles.find((article) => article.id === id);
   return {
     id,
-    assetKey: form.elements.assetKey.value.trim() || id,
+    sourceTitle: form.elements.sourceTitle.value.trim(),
+    sourceUrl: form.elements.sourceUrl.value.trim(),
+    sourceText: form.elements.sourceText.value.trim(),
+    keywords: splitCsv(form.elements.keywords.value),
     channel: form.elements.channel.value,
     topic: form.elements.topic.value,
+    cover: form.elements.cover.value.trim(),
     title: form.elements.title.value.trim(),
     intro: form.elements.intro.value.trim(),
-    thought: form.elements.thought.value.trim(),
-    keywords: splitCsv(form.elements.keywords.value),
-    paragraphs: splitLines(form.elements.paragraphs.value),
-    revealText: form.elements.revealText.value.trim(),
-    decodeClues: parseDecodeClues(form.elements.decodeClues.value, id),
-    questions: splitLines(form.elements.questions.value),
-    prompt: form.elements.prompt.value.trim(),
+    rewrittenText: form.elements.rewrittenText.value.trim(),
     storyAudio: form.elements.storyAudio.value.trim(),
-    cover: form.elements.cover.value.trim(),
-    storySubtitleLines: splitLines(form.elements.storySubtitleLines.value),
-    storySubtitleCueEndMs: parseCueMs(form.elements.storySubtitleCueEndMs.value),
     host: form.elements.host.value.trim(),
     duration: form.elements.duration.value.trim(),
     status: statusOverride || form.elements.status.value,
-    recommended: form.elements.recommended.checked,
+    revealCards: parseRevealCards(form.elements.revealCards.value),
+    fixedQuestions: splitLines(form.elements.fixedQuestions.value),
+    asrEnabled: boolText(form.elements.asrEnabled.value),
+    llmEnabled: boolText(form.elements.llmEnabled.value),
+    qaPrompt: form.elements.qaPrompt.value.trim(),
+    checkinPrompt: form.elements.checkinPrompt.value.trim(),
+    checkinFeedback: form.elements.checkinFeedback.value.trim(),
     reviewNote: form.elements.reviewNote.value.trim(),
-    plays: existing?.plays || 0,
+    recommended: form.elements.recommended.checked,
     updatedAt: nowText(),
+    createdAt: existing?.createdAt || nowText(),
   };
 }
 
@@ -541,42 +525,49 @@ function copyArticle(id) {
   const source = state.articles.find((article) => article.id === id);
   if (!source) return;
   const nextId = `${source.id}-copy-${Date.now()}`;
-  state.articles.unshift({ ...source, id: nextId, assetKey: nextId, title: `${source.title} 副本`, status: "draft", recommended: false, plays: 0, updatedAt: nowText() });
+  state.articles.unshift({ ...source, id: nextId, sourceTitle: `${source.sourceTitle} 副本`, title: `${source.title} 副本`, status: "source", recommended: false, updatedAt: nowText() });
   persist();
   renderAll();
 }
 
 function deleteArticle(id) {
-  if (!confirm("确定删除这条儿童新闻吗？")) return;
+  if (!confirm("确定删除这条新闻流程吗？")) return;
   state.articles = state.articles.filter((article) => article.id !== id);
   persist();
   renderAll();
 }
 
 function exportData() {
-  const payload = state.articles.map((article) => ({
-    id: article.id,
-    assetKey: article.assetKey,
-    channel: article.channel,
-    topic: article.topic,
-    title: article.title,
-    intro: article.intro,
-    thought: article.thought,
-    keywords: article.keywords,
-    paragraphs: article.paragraphs,
-    revealText: article.revealText,
-    decodes: (article.decodeClues || []).map((clue) => [`故事里：${clue.word}`, `现实中：${clue.answer}`]),
-    questions: article.questions,
-    prompt: article.prompt,
-    decodeClues: article.decodeClues,
-    storySubtitleLines: article.storySubtitleLines,
-    storySubtitleCueEndMs: article.storySubtitleCueEndMs,
-  }));
+  const payload = state.articles
+    .filter((article) => article.status === "published")
+    .map((article) => ({
+      id: article.id,
+      channel: article.channel,
+      topic: article.topic,
+      title: article.title,
+      intro: article.intro,
+      keywords: article.keywords,
+      paragraphs: paragraphs(article),
+      storyAudio: article.storyAudio,
+      cover: article.cover,
+      decodes: (article.revealCards || []).map((card) => [`故事里：${card.from}`, `现实中：${card.to}`]),
+      revealCards: article.revealCards,
+      questions: article.fixedQuestions,
+      qa: {
+        asrEnabled: article.asrEnabled,
+        llmEnabled: article.llmEnabled,
+        prompt: article.qaPrompt,
+      },
+      checkin: {
+        prompt: article.checkinPrompt,
+        feedback: article.checkinFeedback,
+      },
+    }));
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = `imported_kids_news_${Date.now()}.json`;
+  link.download = `kids_news_frontend_${Date.now()}.json`;
   link.click();
   URL.revokeObjectURL(url);
 }
@@ -594,35 +585,35 @@ function bindEvents() {
     event.preventDefault();
     saveArticle();
   });
-  $("#saveDraft").addEventListener("click", () => saveArticle("draft"));
+  $("#saveDraft").addEventListener("click", () => saveArticle("source"));
   $("#searchInput").addEventListener("input", (event) => {
     state.search = event.target.value;
-    renderTables();
+    renderSourceRows();
   });
   $("#statusFilter").addEventListener("change", (event) => {
     state.statusFilter = event.target.value;
-    renderTables();
+    renderSourceRows();
   });
   $("#categoryFilter").addEventListener("change", (event) => {
     state.categoryFilter = event.target.value;
-    renderTables();
+    renderSourceRows();
   });
   $("#exportData").addEventListener("click", exportData);
   $("#resetDemo").addEventListener("click", () => {
-    localStorage.removeItem("kids-news-admin-v2");
+    localStorage.removeItem("kids-news-admin-v3");
     loadArticles();
     renderAll();
   });
   document.addEventListener("click", (event) => {
-    const actionTarget = event.target.closest("[data-action]");
-    if (!actionTarget) return;
-    const { action, id } = actionTarget.dataset;
+    const target = event.target.closest("[data-action]");
+    if (!target) return;
+    const { action, id } = target.dataset;
     const article = state.articles.find((item) => item.id === id);
     if (action === "edit") openEditor(article);
     if (action === "copy") copyArticle(id);
     if (action === "delete") deleteArticle(id);
-    if (action === "publish") updateArticle(id, { status: "published", recommended: true, reviewNote: "审核通过，可进入儿童端新闻电台。" });
-    if (action === "back-draft") updateArticle(id, { status: "rewrite", reviewNote: "退回改写，请补充故事/揭秘/问答。" });
+    if (action === "submit-review") updateArticle(id, { status: "review" });
+    if (action === "publish") updateArticle(id, { status: "published", recommended: true });
   });
   document.addEventListener("change", (event) => {
     const target = event.target;

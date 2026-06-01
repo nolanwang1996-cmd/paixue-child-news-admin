@@ -447,9 +447,29 @@ tr:last-child td {
   background: #edf1f5;
 }
 
+.status-source {
+  color: #52606d;
+  background: #edf1f5;
+}
+
 .status-rewrite {
   color: #6a4b10;
   background: #fff3d6;
+}
+
+.status-decode {
+  color: #69479a;
+  background: #efe6ff;
+}
+
+.status-qa {
+  color: #9a3f62;
+  background: #ffe5ef;
+}
+
+.status-checkin {
+  color: #2f6c52;
+  background: #def7eb;
 }
 
 .status-audio {
@@ -579,6 +599,48 @@ tr:last-child td {
   font-weight: 750;
 }
 
+.mini-tag {
+  display: inline-flex;
+  margin: 0 6px 6px 0;
+  border-radius: 999px;
+  padding: 5px 8px;
+  color: #344152;
+  background: #eef4f8;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.reveal-card-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.reveal-card-row {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  background: #f8fafc;
+}
+
+.reveal-card-row strong,
+.reveal-card-row span,
+.reveal-card-row small {
+  display: block;
+}
+
+.reveal-card-row span {
+  margin-top: 6px;
+  color: #536170;
+  line-height: 1.6;
+}
+
+.reveal-card-row small {
+  margin-top: 6px;
+  color: var(--accent-dark);
+  font-weight: 750;
+}
+
 .homepage-layout {
   display: grid;
   grid-template-columns: 1fr 360px;
@@ -695,6 +757,21 @@ tr:last-child td {
 
 .span-2 {
   grid-column: span 2;
+}
+
+.form-section {
+  display: grid;
+  gap: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px;
+  background: #f8fafc;
+}
+
+.form-section h4 {
+  margin: 0;
+  color: var(--accent-dark);
+  font-size: 15px;
 }
 
 .checkbox-label {

@@ -2,16 +2,13 @@
 
 这是一个可直接部署的静态后台原型，当前数据保存在浏览器 `localStorage` 中。
 
-后台流程已经按儿童端新闻电台的 `KidsNews` 结构补齐：
+后台流程已经按儿童端新闻电台生产后台补齐：
 
-- 频道：热点新闻台 `hot`、专题新闻台 `theme`
-- 专题：体育、科技、天文、国际时政、生活、动物自然
-- 故事播报：`intro`、`thought`、`keywords`、`paragraphs`
-- 新闻揭秘：`revealText`、`decodeClues`
-- 语音问答：`questions`，对应儿童端 `NewsAiService`
-- 表达打卡：`prompt`
-- 音频字幕：`storyAudio`、`cover`、`storySubtitleLines`、`storySubtitleCueEndMs`
-- 发布导出：可导出接近 `app/src/main/assets/imported_kids_news.json` 的 JSON 结构
+- 第一步：上传原始新闻稿件/链接、新闻题目、关键词、所属频道、具体专题和新闻封面。原始稿只用于后台，不进入儿童前端。
+- 第二步：上传儿童化改写后的新闻稿，以及对应语音播报音频。
+- 第三步：配置新闻揭秘卡片。每张卡片包含封面图、`xxx -> xxx` 词条、一段鸢尾花姐姐口吻解释，以及对应音频。
+- 第四步：配置固定问题；儿童端可录音，语音转文字进入对话框，再调用大模型实时问答。
+- 第五步：配置打卡界面，审核后发布到儿童端新闻电台。
 
 ## 本地预览
 
