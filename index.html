@@ -163,7 +163,7 @@
     </main>
 
     <dialog id="editorDialog" class="editor-dialog">
-      <form id="articleForm" method="dialog">
+      <form id="articleForm" method="dialog" novalidate>
         <header class="dialog-header">
           <div>
             <span class="eyebrow">新闻生产流程编辑</span>
@@ -173,7 +173,7 @@
         </header>
         <input type="hidden" name="id" />
         <div class="form-grid">
-          <section class="form-section span-2">
+          <section class="form-section span-2" data-section="source">
             <h4>1. 原始新闻稿件/链接</h4>
             <div class="form-grid">
               <label>新闻题目<input name="sourceTitle" required maxlength="60" /></label>
@@ -192,7 +192,7 @@
             </div>
           </section>
 
-          <section class="form-section span-2">
+          <section class="form-section span-2" data-section="rewrite">
             <h4>2. 改写后的新闻稿与语音播报</h4>
             <div class="form-grid">
               <label class="span-2">前台标题<input name="title" required maxlength="48" /></label>
@@ -217,7 +217,7 @@
             </div>
           </section>
 
-          <section class="form-section span-2">
+          <section class="form-section span-2" data-section="decode">
             <h4>3. 新闻揭秘卡片</h4>
             <div class="upload-note span-2">
               当前公网原型会保存文件名，正式后台需要接入后端文件上传和对象存储。
@@ -229,7 +229,7 @@
             <label class="span-2">揭秘卡片列表<textarea name="revealCards" rows="7" placeholder="每行一张卡：封面 | 故事词 -> 现实词 | 鸢尾花姐姐解释 | 音频"></textarea></label>
           </section>
 
-          <section class="form-section span-2">
+          <section class="form-section span-2" data-section="qa">
             <h4>4. 问答环节</h4>
             <div class="form-grid">
               <label class="span-2">固定问题<textarea name="fixedQuestions" rows="3" placeholder="每行一个固定问题"></textarea></label>
@@ -239,7 +239,7 @@
             </div>
           </section>
 
-          <section class="form-section span-2">
+          <section class="form-section span-2" data-section="checkin">
             <h4>5. 打卡界面</h4>
             <div class="form-grid">
               <label class="span-2">打卡引导语<input name="checkinPrompt" /></label>
@@ -251,7 +251,7 @@
         </div>
         <footer class="dialog-footer">
           <button type="button" id="saveDraft" class="secondary-button">保存原始稿</button>
-          <button type="submit" class="primary-button">保存流程</button>
+          <button type="submit" id="saveFlow" class="primary-button">保存流程</button>
         </footer>
       </form>
     </dialog>

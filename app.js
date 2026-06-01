@@ -18,6 +18,15 @@ const statusMap = {
   offline: "已下架",
 };
 
+const editorSections = {
+  all: "新闻生产流程编辑",
+  source: "编辑原始稿件",
+  rewrite: "编辑改写播报",
+  decode: "编辑揭秘卡片",
+  qa: "编辑问答环节",
+  checkin: "编辑打卡发布",
+};
+
 const pipelineSteps = [
   { key: "source", title: "原始稿件", hint: "原始新闻稿件/链接、题目、关键词、频道、专题、封面。仅后台可见。" },
   { key: "rewrite", title: "改写播报", hint: "上传儿童化改写稿，并绑定对应语音播报音频。" },
@@ -346,7 +355,7 @@ function renderSourceRows() {
       <td><div class="progress-line"><span style="width:${completion(article)}%"></span></div><small>${completion(article)}%</small></td>
       <td>
         <div class="row-actions">
-          <button class="text-button" data-action="edit" data-id="${article.id}">编辑</button>
+          <button class="text-button" data-action="edit-section" data-section="source" data-id="${article.id}">编辑原始</button>
           <button class="text-button" data-action="copy" data-id="${article.id}">复制</button>
           <button class="text-button danger" data-action="delete" data-id="${article.id}">删除</button>
         </div>
@@ -362,7 +371,7 @@ function renderRewrite() {
       <strong>${escapeHtml(article.title || article.sourceTitle)}</strong>
       <span class="muted">${escapeHtml(article.storyAudio || "未上传播报音频")} · ${escapeHtml(article.host || "未设置主播")}</span>
       <p>${escapeHtml(article.intro || "还没有填写儿童端导语。")}</p>
-      <div class="review-actions"><button class="secondary-button" data-action="edit" data-id="${article.id}">编辑改写稿</button></div>
+      <div class="review-actions"><button class="secondary-button" data-action="edit-section" data-section="rewrite" data-id="${article.id}">编辑改写稿</button></div>
     </article>
   `).join("");
 }
@@ -381,7 +390,7 @@ function renderDecode() {
           </div>
         `).join("") || `<p class="muted">还没有揭秘卡片。</p>`}
       </div>
-      <div class="review-actions"><button class="secondary-button" data-action="edit" data-id="${article.id}">编辑揭秘卡</button></div>
+      <div class="review-actions"><button class="secondary-button" data-action="edit-section" data-section="decode" data-id="${article.id}">编辑揭秘卡</button></div>
     </article>
   `).join("");
 }
@@ -393,7 +402,7 @@ function renderQa() {
       <span class="muted">录音转文字：${article.asrEnabled ? "开启" : "关闭"} · 实时问答：${article.llmEnabled ? "开启" : "关闭"}</span>
       <p>${escapeHtml(article.qaPrompt || "未设置问答提示词。")}</p>
       <div class="clue-list">${(article.fixedQuestions || []).map((question) => `<span>${escapeHtml(question)}</span>`).join("")}</div>
-      <div class="review-actions"><button class="secondary-button" data-action="edit" data-id="${article.id}">编辑问答</button></div>
+      <div class="review-actions"><button class="secondary-button" data-action="edit-section" data-section="qa" data-id="${article.id}">编辑问答</button></div>
     </article>
   `).join("");
 }
@@ -406,6 +415,7 @@ function renderCheckin() {
       <p>${escapeHtml(article.checkinPrompt || "还没有配置打卡引导语。")}</p>
       <p class="muted">${escapeHtml(article.checkinFeedback || "还没有配置完成反馈。")}</p>
       <div class="review-actions">
+        <button class="secondary-button" data-action="edit-section" data-section="checkin" data-id="${article.id}">编辑打卡</button>
         <button class="primary-button" data-action="submit-review" data-id="${article.id}">提交审核</button>
         <button class="secondary-button" data-action="publish" data-id="${article.id}">直接发布</button>
       </div>
@@ -455,11 +465,24 @@ function fillControls() {
   $("#categoryFilter").innerHTML = `<option value="all">全部专题</option>${topicOptions}`;
 }
 
-function openEditor(article = null) {
+function setEditorSection(section) {
+  const activeSection = editorSections[section] ? section : "all";
+  const showAll = activeSection === "all";
+  $$(".form-section[data-section]").forEach((formSection) => {
+    formSection.classList.toggle("is-hidden", !showAll && formSection.dataset.section !== activeSection);
+  });
+  $("#saveDraft").classList.toggle("is-hidden", !(showAll || activeSection === "source"));
+  $("#saveFlow").textContent = showAll ? "保存流程" : "保存本步骤";
+  $("#articleForm").dataset.editSection = activeSection;
+}
+
+function openEditor(article = null, section = "all") {
   const form = $("#articleForm");
   form.reset();
+  setEditorSection(article ? section : "all");
+  const activeSection = form.dataset.editSection || "all";
   const nextId = article?.id || `news-${Date.now()}`;
-  $("#dialogTitle").textContent = article ? "编辑新闻流程" : "新建新闻";
+  $("#dialogTitle").textContent = article ? editorSections[activeSection] : "新建新闻";
   form.elements.id.value = nextId;
   form.elements.sourceTitle.value = article?.sourceTitle || "";
   form.elements.sourceUrl.value = article?.sourceUrl || "";
@@ -649,7 +672,7 @@ function bindEvents() {
     if (!target) return;
     const { action, id } = target.dataset;
     const article = state.articles.find((item) => item.id === id);
-    if (action === "edit") openEditor(article);
+    if (action === "edit" || action === "edit-section") openEditor(article, target.dataset.section || "all");
     if (action === "copy") copyArticle(id);
     if (action === "delete") deleteArticle(id);
     if (action === "submit-review") updateArticle(id, { status: "review" });
