@@ -119,6 +119,11 @@ textarea {
   outline: none;
 }
 
+input[type="file"] {
+  padding: 8px;
+  background: #f8fafc;
+}
+
 textarea {
   resize: vertical;
   line-height: 1.6;
@@ -772,6 +777,16 @@ tr:last-child td {
   margin: 0;
   color: var(--accent-dark);
   font-size: 15px;
+}
+
+.upload-note {
+  border: 1px dashed rgba(22, 127, 122, 0.35);
+  border-radius: 8px;
+  padding: 12px;
+  color: #3c5967;
+  background: rgba(22, 127, 122, 0.07);
+  font-size: 13px;
+  line-height: 1.6;
 }
 
 .checkbox-label {

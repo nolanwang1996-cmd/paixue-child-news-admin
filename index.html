@@ -181,6 +181,7 @@
               <label class="span-2">原始新闻稿件<textarea name="sourceText" rows="5" placeholder="粘贴原始新闻稿，内部使用，不进入前台"></textarea></label>
               <label>新闻关键词<input name="keywords" placeholder="用中文逗号分隔" /></label>
               <label>新闻封面<input name="cover" placeholder="封面 URL 或资源 key" /></label>
+              <label>选择封面文件<input name="coverUpload" type="file" accept="image/*" /></label>
               <label>所属频道
                 <select name="channel">
                   <option value="hot">热点新闻台</option>
@@ -198,6 +199,7 @@
               <label class="span-2">儿童端导语<textarea name="intro" rows="3"></textarea></label>
               <label class="span-2">改写后的新闻稿<textarea name="rewrittenText" rows="8" required></textarea></label>
               <label>播报音频<input name="storyAudio" placeholder="音频 URL 或资源 key" /></label>
+              <label>选择播报音频<input name="storyAudioUpload" type="file" accept="audio/*" /></label>
               <label>主播<input name="host" /></label>
               <label>音频时长<input name="duration" placeholder="04:28" /></label>
               <label>流程状态
@@ -217,6 +219,13 @@
 
           <section class="form-section span-2">
             <h4>3. 新闻揭秘卡片</h4>
+            <div class="upload-note span-2">
+              当前公网原型会保存文件名，正式后台需要接入后端文件上传和对象存储。
+            </div>
+            <div class="form-grid">
+              <label>选择卡片封面<input name="revealCoverUpload" type="file" accept="image/*" /></label>
+              <label>选择卡片音频<input name="revealAudioUpload" type="file" accept="audio/*" /></label>
+            </div>
             <label class="span-2">揭秘卡片列表<textarea name="revealCards" rows="7" placeholder="每行一张卡：封面 | 故事词 -> 现实词 | 鸢尾花姐姐解释 | 音频"></textarea></label>
           </section>
 

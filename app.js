@@ -172,6 +172,8 @@ const state = {
   search: "",
   statusFilter: "all",
   categoryFilter: "all",
+  pendingRevealCover: "",
+  pendingRevealAudio: "",
 };
 
 const $ = (selector) => document.querySelector(selector);
@@ -193,6 +195,20 @@ function boolText(value) {
 
 function revealCardsToText(cards) {
   return (cards || []).map((card) => `${card.cover || ""} | ${card.from || ""} -> ${card.to || ""} | ${card.explanation || ""} | ${card.audio || ""}`).join("\n");
+}
+
+function fileLabel(file) {
+  return file ? `${file.name}（本地选择，待正式上传）` : "";
+}
+
+function upsertDraftRevealLine() {
+  const form = $("#articleForm");
+  if (!form?.elements?.revealCards) return;
+  const cover = state.pendingRevealCover || "封面待上传";
+  const audio = state.pendingRevealAudio || "音频待上传";
+  const draft = `${cover} | 故事词 -> 现实词 | 请补充鸢尾花姐姐口吻解释 | ${audio}`;
+  const lines = splitLines(form.elements.revealCards.value).filter((line) => !line.includes("请补充鸢尾花姐姐口吻解释"));
+  form.elements.revealCards.value = [...lines, draft].join("\n");
 }
 
 function parseRevealCards(value) {
@@ -460,6 +476,8 @@ function openEditor(article = null) {
   form.elements.duration.value = article?.duration || "";
   form.elements.status.value = article?.status || "source";
   form.elements.revealCards.value = revealCardsToText(article?.revealCards);
+  state.pendingRevealCover = "";
+  state.pendingRevealAudio = "";
   form.elements.fixedQuestions.value = (article?.fixedQuestions || []).join("\n");
   form.elements.asrEnabled.value = article?.asrEnabled === false ? "关闭" : "开启";
   form.elements.llmEnabled.value = article?.llmEnabled === false ? "关闭" : "开启";
@@ -603,6 +621,28 @@ function bindEvents() {
     localStorage.removeItem("kids-news-admin-v3");
     loadArticles();
     renderAll();
+  });
+  $("#articleForm").elements.coverUpload.addEventListener("change", (event) => {
+    const label = fileLabel(event.target.files?.[0]);
+    if (label) $("#articleForm").elements.cover.value = label;
+  });
+  $("#articleForm").elements.storyAudioUpload.addEventListener("change", (event) => {
+    const label = fileLabel(event.target.files?.[0]);
+    if (label) $("#articleForm").elements.storyAudio.value = label;
+  });
+  $("#articleForm").elements.revealCoverUpload.addEventListener("change", (event) => {
+    const label = fileLabel(event.target.files?.[0]);
+    if (label) {
+      state.pendingRevealCover = label;
+      upsertDraftRevealLine();
+    }
+  });
+  $("#articleForm").elements.revealAudioUpload.addEventListener("change", (event) => {
+    const label = fileLabel(event.target.files?.[0]);
+    if (label) {
+      state.pendingRevealAudio = label;
+      upsertDraftRevealLine();
+    }
   });
   document.addEventListener("click", (event) => {
     const target = event.target.closest("[data-action]");
