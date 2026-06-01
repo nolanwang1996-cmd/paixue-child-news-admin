@@ -1,6 +1,6 @@
 # 儿童新闻电台后台原型
 
-这是一个可直接部署的静态后台原型，当前数据保存在浏览器 `localStorage` 中。
+这是一个可直接部署的后台管理前端。新版已经支持连接真实后端：新闻流程数据保存在数据库中，封面和音频通过后端上传到本地存储或 OSS，多人编辑通过账号身份、编辑锁和版本号防覆盖。
 
 后台流程已经按儿童端新闻电台生产后台补齐：
 
@@ -25,8 +25,44 @@ http://127.0.0.1:4173
 ## 默认登录
 
 ```text
+后端地址：http://127.0.0.1:8000
 账号：editor
 密码：demo123
+```
+
+公网 GitHub Pages 只能托管前端页面，真正上传和多人编辑需要同时部署 `backend/`。部署后在登录页填写你的后端地址，例如：
+
+```text
+https://api.example.com
+```
+
+## 后端配置
+
+后端新增接口前缀：
+
+```text
+/admin/kids-news
+```
+
+关键环境变量：
+
+```text
+KIDS_NEWS_ADMIN_PASSWORD=你的后台密码
+KIDS_NEWS_AUTH_SECRET=一段足够长的随机字符串
+ADMIN_CORS_ORIGINS=https://nolanwang1996-cmd.github.io,https://你的后台前端域名
+STORAGE_MODE=local
+LOCAL_STORAGE_ROOT=/data/storage
+PUBLIC_BASE_URL=https://你的后端域名
+```
+
+如果要用 OSS，沿用仓库现有 OSS 配置：
+
+```text
+STORAGE_MODE=oss
+OSS_BUCKET=你的 bucket
+OSS_ENDPOINT=oss-cn-hangzhou.aliyuncs.com
+OSS_ACCESS_KEY_ID=...
+OSS_ACCESS_KEY_SECRET=...
 ```
 
 ## 部署方式
@@ -39,9 +75,9 @@ http://127.0.0.1:4173
 
 当前项目已经包含 `vercel.json` 和 `netlify.toml`，可以直接作为静态站发布。
 
-## 后续升级方向
+## 已实现
 
-- 把 `localStorage` 换成真实数据库。
-- 接入对象存储，用于上传封面图和音频。
-- 增加账号权限、审核记录和操作日志。
-- 给小程序提供只读内容接口。
+- 新闻稿、改写稿、揭秘卡、问答、打卡流程保存到后端数据库。
+- 封面图、播报音频、揭秘卡封面和音频走真实文件上传。
+- 多人编辑时打开文章会加编辑锁；保存时带版本号，避免覆盖别人刚保存的内容。
+- 静态前端可以部署在 GitHub Pages/Vercel/Netlify，后端独立部署。

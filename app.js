@@ -183,6 +183,9 @@ const state = {
   categoryFilter: "all",
   pendingRevealCover: "",
   pendingRevealAudio: "",
+  apiBase: localStorage.getItem("kids-news-api-base") || "",
+  token: localStorage.getItem("kids-news-token") || "",
+  account: localStorage.getItem("kids-news-account") || "",
 };
 
 const $ = (selector) => document.querySelector(selector);
@@ -206,8 +209,126 @@ function revealCardsToText(cards) {
   return (cards || []).map((card) => `${card.cover || ""} | ${card.from || ""} -> ${card.to || ""} | ${card.explanation || ""} | ${card.audio || ""}`).join("\n");
 }
 
+function apiBase() {
+  const configured = state.apiBase || window.KIDS_NEWS_API_BASE || "";
+  return configured.replace(/\/+$/, "");
+}
+
+function toSnakeArticle(article) {
+  return {
+    id: article.id,
+    source_title: article.sourceTitle,
+    source_url: article.sourceUrl,
+    source_text: article.sourceText,
+    keywords: article.keywords || [],
+    channel: article.channel,
+    topic: article.topic,
+    cover: article.cover,
+    title: article.title,
+    intro: article.intro,
+    rewritten_text: article.rewrittenText,
+    story_audio: article.storyAudio,
+    host: article.host,
+    duration: article.duration,
+    status: article.status,
+    reveal_cards: article.revealCards || [],
+    fixed_questions: article.fixedQuestions || [],
+    asr_enabled: article.asrEnabled,
+    llm_enabled: article.llmEnabled,
+    qa_prompt: article.qaPrompt,
+    checkin_prompt: article.checkinPrompt,
+    checkin_feedback: article.checkinFeedback,
+    review_note: article.reviewNote,
+    recommended: article.recommended,
+    expected_version: article.version || null,
+  };
+}
+
+function fromSnakeArticle(article) {
+  return {
+    id: article.id,
+    sourceTitle: article.source_title || "",
+    sourceUrl: article.source_url || "",
+    sourceText: article.source_text || "",
+    keywords: article.keywords || [],
+    channel: article.channel || "hot",
+    topic: article.topic || "生活",
+    cover: article.cover || "",
+    title: article.title || "",
+    intro: article.intro || "",
+    rewrittenText: article.rewritten_text || "",
+    storyAudio: article.story_audio || "",
+    host: article.host || "鸢尾花姐姐",
+    duration: article.duration || "",
+    status: article.status || "source",
+    revealCards: article.reveal_cards || [],
+    fixedQuestions: article.fixed_questions || [],
+    asrEnabled: article.asr_enabled !== false,
+    llmEnabled: article.llm_enabled !== false,
+    qaPrompt: article.qa_prompt || "",
+    checkinPrompt: article.checkin_prompt || "",
+    checkinFeedback: article.checkin_feedback || "",
+    reviewNote: article.review_note || "",
+    recommended: Boolean(article.recommended),
+    version: article.version || 1,
+    createdBy: article.created_by || "",
+    updatedBy: article.updated_by || "",
+    lockedBy: article.locked_by || "",
+    lockExpiresAt: article.lock_expires_at || "",
+    createdAt: article.created_at || nowText(),
+    updatedAt: article.updated_at || nowText(),
+  };
+}
+
+async function apiRequest(path, options = {}) {
+  if (!apiBase()) throw new Error("请先填写后端地址。");
+  const headers = { ...(options.headers || {}) };
+  if (state.token) headers.Authorization = `Bearer ${state.token}`;
+  if (options.body && !(options.body instanceof FormData)) headers["Content-Type"] = "application/json";
+  const response = await fetch(`${apiBase()}${path}`, { ...options, headers });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok || payload.success === false) {
+    throw new Error(payload?.error?.message || payload?.detail || `请求失败：${response.status}`);
+  }
+  return payload.data;
+}
+
+async function loginToApi({ apiBaseValue, account, password }) {
+  state.apiBase = apiBaseValue.replace(/\/+$/, "");
+  localStorage.setItem("kids-news-api-base", state.apiBase);
+  const data = await apiRequest("/admin/kids-news/login", {
+    method: "POST",
+    body: JSON.stringify({ account, password }),
+  });
+  state.token = data.token;
+  state.account = data.account;
+  localStorage.setItem("kids-news-token", state.token);
+  localStorage.setItem("kids-news-account", state.account);
+}
+
+async function uploadFile(file) {
+  if (!file) return "";
+  const body = new FormData();
+  body.append("file", file);
+  const data = await apiRequest("/admin/kids-news/assets", { method: "POST", body });
+  return data.url;
+}
+
 function fileLabel(file) {
-  return file ? `${file.name}（本地选择，待正式上传）` : "";
+  return file ? `${file.name} 上传中...` : "";
+}
+
+async function fillUploadedField(input, fieldName) {
+  const file = input.files?.[0];
+  if (!file) return;
+  const field = $("#articleForm").elements[fieldName];
+  field.value = fileLabel(file);
+  try {
+    field.value = await uploadFile(file);
+  } catch (error) {
+    alert(error.message);
+    field.value = "";
+  }
 }
 
 function upsertDraftRevealLine() {
@@ -284,14 +405,17 @@ function readyForReview(article) {
   return completion(article) >= 100;
 }
 
-function loadArticles() {
-  const stored = localStorage.getItem("kids-news-admin-v3");
-  state.articles = stored ? JSON.parse(stored) : seedArticles;
-  persist();
+async function loadArticles() {
+  if (!state.token || !apiBase()) {
+    state.articles = seedArticles;
+    return;
+  }
+  const articles = await apiRequest("/admin/kids-news/articles");
+  state.articles = articles.map(fromSnakeArticle);
 }
 
 function persist() {
-  localStorage.setItem("kids-news-admin-v3", JSON.stringify(state.articles));
+  renderAll();
 }
 
 function filteredArticles() {
@@ -476,14 +600,29 @@ function setEditorSection(section) {
   $("#articleForm").dataset.editSection = activeSection;
 }
 
-function openEditor(article = null, section = "all") {
+async function openEditor(article = null, section = "all") {
   const form = $("#articleForm");
+  if (article && state.token) {
+    try {
+      const locked = await apiRequest(`/admin/kids-news/articles/${encodeURIComponent(article.id)}/lock`, {
+        method: "POST",
+        body: JSON.stringify({ expected_version: article.version || null }),
+      });
+      article = fromSnakeArticle(locked);
+      const index = state.articles.findIndex((item) => item.id === article.id);
+      if (index >= 0) state.articles[index] = article;
+    } catch (error) {
+      alert(error.message);
+      return;
+    }
+  }
   form.reset();
   setEditorSection(article ? section : "all");
   const activeSection = form.dataset.editSection || "all";
   const nextId = article?.id || `news-${Date.now()}`;
   $("#dialogTitle").textContent = article ? editorSections[activeSection] : "新建新闻";
   form.elements.id.value = nextId;
+  form.elements.version.value = article?.version || "";
   form.elements.sourceTitle.value = article?.sourceTitle || "";
   form.elements.sourceUrl.value = article?.sourceUrl || "";
   form.elements.sourceText.value = article?.sourceText || "";
@@ -518,6 +657,7 @@ function formToArticle(statusOverride) {
   const existing = state.articles.find((article) => article.id === id);
   return {
     id,
+    version: Number(form.elements.version.value || 0) || null,
     sourceTitle: form.elements.sourceTitle.value.trim(),
     sourceUrl: form.elements.sourceUrl.value.trim(),
     sourceText: form.elements.sourceText.value.trim(),
@@ -546,36 +686,68 @@ function formToArticle(statusOverride) {
   };
 }
 
-function saveArticle(statusOverride = null) {
+async function saveArticle(statusOverride = null) {
   const article = formToArticle(statusOverride);
-  const index = state.articles.findIndex((item) => item.id === article.id);
-  if (index >= 0) state.articles[index] = article;
-  else state.articles.unshift(article);
-  persist();
-  renderAll();
-  $("#editorDialog").close();
+  try {
+    const exists = state.articles.some((item) => item.id === article.id);
+    const saved = await apiRequest(exists ? `/admin/kids-news/articles/${encodeURIComponent(article.id)}` : "/admin/kids-news/articles", {
+      method: exists ? "PUT" : "POST",
+      body: JSON.stringify(toSnakeArticle(article)),
+    });
+    const nextArticle = fromSnakeArticle(saved);
+    const index = state.articles.findIndex((item) => item.id === nextArticle.id);
+    if (index >= 0) state.articles[index] = nextArticle;
+    else state.articles.unshift(nextArticle);
+    renderAll();
+    $("#editorDialog").close();
+  } catch (error) {
+    alert(error.message);
+    await refreshArticles();
+  }
 }
 
-function updateArticle(id, patch) {
-  state.articles = state.articles.map((article) => article.id === id ? { ...article, ...patch, updatedAt: nowText() } : article);
-  persist();
+async function refreshArticles() {
+  await loadArticles();
   renderAll();
 }
 
-function copyArticle(id) {
+async function updateArticle(id, patch) {
+  const article = state.articles.find((item) => item.id === id);
+  if (!article) return;
+  try {
+    const saved = await apiRequest(`/admin/kids-news/articles/${encodeURIComponent(id)}`, {
+      method: "PUT",
+      body: JSON.stringify(toSnakeArticle({ ...article, ...patch, updatedAt: nowText() })),
+    });
+    state.articles = state.articles.map((item) => item.id === id ? fromSnakeArticle(saved) : item);
+    renderAll();
+  } catch (error) {
+    alert(error.message);
+    await refreshArticles();
+  }
+}
+
+async function copyArticle(id) {
   const source = state.articles.find((article) => article.id === id);
   if (!source) return;
-  const nextId = `${source.id}-copy-${Date.now()}`;
-  state.articles.unshift({ ...source, id: nextId, sourceTitle: `${source.sourceTitle} 副本`, title: `${source.title} 副本`, status: "source", recommended: false, updatedAt: nowText() });
-  persist();
-  renderAll();
+  try {
+    const copied = await apiRequest(`/admin/kids-news/articles/${encodeURIComponent(id)}/copy`, { method: "POST" });
+    state.articles.unshift(fromSnakeArticle(copied));
+    renderAll();
+  } catch (error) {
+    alert(error.message);
+  }
 }
 
-function deleteArticle(id) {
+async function deleteArticle(id) {
   if (!confirm("确定删除这条新闻流程吗？")) return;
-  state.articles = state.articles.filter((article) => article.id !== id);
-  persist();
-  renderAll();
+  try {
+    await apiRequest(`/admin/kids-news/articles/${encodeURIComponent(id)}`, { method: "DELETE" });
+    state.articles = state.articles.filter((article) => article.id !== id);
+    renderAll();
+  } catch (error) {
+    alert(error.message);
+  }
 }
 
 function exportData() {
@@ -614,10 +786,22 @@ function exportData() {
 }
 
 function bindEvents() {
-  $("#loginForm").addEventListener("submit", (event) => {
+  $("#loginForm").elements.apiBase.value = state.apiBase || window.KIDS_NEWS_API_BASE || "";
+  $("#loginForm").addEventListener("submit", async (event) => {
     event.preventDefault();
-    $('[data-view="login"]').classList.add("is-hidden");
-    $('[data-view="workspace"]').classList.remove("is-hidden");
+    const form = event.currentTarget;
+    try {
+      await loginToApi({
+        apiBaseValue: form.elements.apiBase.value,
+        account: form.elements.account.value,
+        password: form.elements.password.value,
+      });
+      await refreshArticles();
+      $('[data-view="login"]').classList.add("is-hidden");
+      $('[data-view="workspace"]').classList.remove("is-hidden");
+    } catch (error) {
+      alert(error.message);
+    }
   });
   $$(".nav-item").forEach((item) => item.addEventListener("click", () => switchPage(item.dataset.page)));
   $("#newArticle").addEventListener("click", () => openEditor());
@@ -641,30 +825,38 @@ function bindEvents() {
   });
   $("#exportData").addEventListener("click", exportData);
   $("#resetDemo").addEventListener("click", () => {
-    localStorage.removeItem("kids-news-admin-v3");
-    loadArticles();
-    renderAll();
+    refreshArticles();
   });
-  $("#articleForm").elements.coverUpload.addEventListener("change", (event) => {
-    const label = fileLabel(event.target.files?.[0]);
-    if (label) $("#articleForm").elements.cover.value = label;
+  $("#articleForm").elements.coverUpload.addEventListener("change", async (event) => {
+    await fillUploadedField(event.target, "cover");
   });
-  $("#articleForm").elements.storyAudioUpload.addEventListener("change", (event) => {
-    const label = fileLabel(event.target.files?.[0]);
-    if (label) $("#articleForm").elements.storyAudio.value = label;
+  $("#articleForm").elements.storyAudioUpload.addEventListener("change", async (event) => {
+    await fillUploadedField(event.target, "storyAudio");
   });
-  $("#articleForm").elements.revealCoverUpload.addEventListener("change", (event) => {
-    const label = fileLabel(event.target.files?.[0]);
-    if (label) {
-      state.pendingRevealCover = label;
+  $("#articleForm").elements.revealCoverUpload.addEventListener("change", async (event) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      state.pendingRevealCover = fileLabel(file);
       upsertDraftRevealLine();
+      try {
+        state.pendingRevealCover = await uploadFile(file);
+        upsertDraftRevealLine();
+      } catch (error) {
+        alert(error.message);
+      }
     }
   });
-  $("#articleForm").elements.revealAudioUpload.addEventListener("change", (event) => {
-    const label = fileLabel(event.target.files?.[0]);
-    if (label) {
-      state.pendingRevealAudio = label;
+  $("#articleForm").elements.revealAudioUpload.addEventListener("change", async (event) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      state.pendingRevealAudio = fileLabel(file);
       upsertDraftRevealLine();
+      try {
+        state.pendingRevealAudio = await uploadFile(file);
+        upsertDraftRevealLine();
+      } catch (error) {
+        alert(error.message);
+      }
     }
   });
   document.addEventListener("click", (event) => {
@@ -687,6 +879,10 @@ function bindEvents() {
 }
 
 fillControls();
-loadArticles();
 bindEvents();
-renderAll();
+loadArticles()
+  .catch((error) => {
+    console.warn(error);
+    state.articles = seedArticles;
+  })
+  .finally(renderAll);
